@@ -1,1 +1,239 @@
-<h2>Site en reconstruction !</h2>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SosoWord - Home</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a2e;
+            color: #eaeaea;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #ffce00;
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #333;
+        }
+
+        .button {
+            background-color: #ffce00;
+            border: none;
+            padding: 15px 40px;
+            color: #1a1a2e;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 30px;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #ffc107;
+            transform: scale(1.1);
+        }
+
+        .menu, .game, .admin-login, .admin-panel, .oops-section {
+            display: none;
+            background-color: #2a2a3e;
+            padding: 30px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu.active, .game.active, .admin-login.active, .admin-panel.active, .oops-section.active {
+            display: block;
+        }
+
+        #word {
+            font-size: 2.5em;
+            margin: 20px 0;
+            letter-spacing: 8px;
+            text-align: center;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding: 10px;
+            border: 2px solid #ffce00;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            font-size: 1em;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+        }
+
+        #message {
+            color: #ff4444;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #message.success {
+            color: #44ff44;
+        }
+    </style>
+</head>
+<body>
+    <h1>SosoWord</h1>
+
+    <div id="menu" class="menu active">
+        <button class="button" onclick="startGame('practice')">Entrainement</button>
+        <button class="button" onclick="startGame('2player')">2 Joueurs</button>
+        <button class="button" onclick="showAdminPanel()">Admin</button>
+        <button class="button" onclick="showOopsSection()">Mode PC</button>
+    </div>
+
+    <div id="input-word" class="game">
+        <h3>Vous êtes le Joueur 1</h3>
+        <p>Entrez un mot pour que le joueur 2 le devine</p>
+        <input type="text" id="playerWord" placeholder="Entrez le mot ici" maxlength="15">
+        <button class="button" onclick="submitWord()">Soumettre</button>
+    </div>
+
+    <div id="game" class="game">
+        <h2>Jeu en cours...</h2>
+        <h3>Joueur 2, devinez le mot !</h3>
+        <p id="word"></p>
+        <input type="text" id="input" placeholder="Entrez une lettre" maxlength="1">
+        <button class="button" onclick="guess()">Soumettre</button>
+        <p id="message"></p>
+    </div>
+
+    <div id="admin-login" class="admin-login">
+        <h3>Connexion Admin</h3>
+        <input type="password" id="admin-password" placeholder="Entrez le mot de passe">
+        <button class="button" onclick="checkAdminPassword()">Accéder</button>
+        <p id="admin-message"></p>
+    </div>
+
+    <div id="admin-panel" class="admin-panel">
+        <h2>Panneau d'administration</h2>
+        <p>Bienvenue dans le panneau d'administration.</p>
+        <button class="button" onclick="RefreshBack()">Retour</button>
+        <button class="button" onclick="stopGame()">Arrêter la partie en cours</button>
+        <p id="current-game"></p>
+        <p id="admin-message"></p>
+    </div>
+
+    <div id="oops-section" class="oops-section">
+        <h2>Oops...</h2>
+        <h3>La version PC est en construction, désolé !</h3>
+        <h4>Erreur: (Numéro D'erreur)</h4>
+        <button class="button" onclick="RefreshBack()">Retour</button>
+    </div>
+
+    <script>
+        let words = ["chat", "chien", "oiseau", "souris", "cheval"];
+        let selectedWord;
+        let guessedWord;
+        let attempts;
+        let mode;
+        let gameActive = false;
+
+        function startGame(selectedMode) {
+            mode = selectedMode;
+            document.getElementById('menu').classList.remove('active');
+            gameActive = true;
+
+            if (mode === 'practice') {
+                selectedWord = words[Math.floor(Math.random() * words.length)];
+                initializeGame();
+            } else if (mode === '2player') {
+                document.getElementById('input-word').classList.add('active');
+            }
+            document.getElementById('current-game').innerText = `Mode: ${mode}, Mot: ${selectedWord}`;
+        }
+
+        function submitWord() {
+            selectedWord = document.getElementById('playerWord').value.toLowerCase();
+            if (selectedWord) {
+                document.getElementById('input-word').classList.remove('active');
+                initializeGame();
+            }
+            document.getElementById('current-game').innerText = `Mode: ${mode}, Mot: ${selectedWord}`;
+        }
+
+        function initializeGame() {
+            guessedWord = "_".repeat(selectedWord.length);
+            attempts = 10;
+            document.getElementById('word').innerText = guessedWord;
+            document.getElementById('game').classList.add('active');
+        }
+
+        function guess() {
+            const input = document.getElementById('input').value.toLowerCase();
+            let newGuessedWord = "";
+
+            for (let i = 0; i < selectedWord.length; i++) {
+                if (input === selectedWord[i]) {
+                    newGuessedWord += input;
+                } else {
+                    newGuessedWord += guessedWord[i];
+                }
+            }
+
+            guessedWord = newGuessedWord;
+            document.getElementById('word').innerText = guessedWord;
+
+            if (!selectedWord.includes(input)) {
+                attempts--;
+                document.getElementById('message').innerText = `Lettre incorrecte! Il vous reste ${attempts} essais.`;
+            } else {
+                document.getElementById('message').innerText = "";
+            }
+
+            if (guessedWord === selectedWord) {
+                document.getElementById('message').innerText = "Félicitations ! Vous avez trouvé le mot.";
+                document.getElementById('message').classList.add('success');
+                setTimeout(() => RefreshBack(), 2000);
+            }
+
+            if (attempts === 0) {
+                document.getElementById('message').innerText = `Perdu! Le mot était "${selectedWord}".`;
+                setTimeout(() => RefreshBack(), 2000);
+            }
+
+            document.getElementById('input').value = "";
+        }
+
+        function showAdminPanel() {
+            document.getElementById('menu').classList.remove('active');
+            document.getElementById('admin-login').classList.add('active');
+        }
+
+        function checkAdminPassword() {
+            const password = document.getElementById('admin-password').value;
+            if (password === 'admin123') {
+                document.getElementById('admin-login').classList.remove('active');
+                document.getElementById('admin-panel').classList.add('active');
+            } else {
+                document.getElementById('admin-message').innerText = 'Mot de passe incorrect.';
+            }
+        }
+
+        function stopGame() {
+            if (gameActive) {
+                document.getElementById('game').innerHTML = `
+                    <h2>Partie Arrêtée !</h2>
+                    <h3>Un admin a arrêté la partie !</h3>
+                `;
+                gameActive = false;
+            } else {
+                document.getElementById('admin-message').innerText = 'Aucune partie en cours à arrêter.';
+            }
+        }
+
+        function showOopsSection() {
+            document.getElementById('
