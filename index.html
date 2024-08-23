@@ -236,4 +236,20 @@
         }
 
         function showOopsSection() {
-            document.getElementById('
+            document.getElementById('menu').classList.remove('active');
+            document.getElementById('oops-section').classList.add('active');
+        }
+
+        function RefreshBack() {
+            document.getElementById('input-word').classList.remove('active');
+            document.getElementById('game').classList.remove('active');
+            document.getElementById('admin-login').classList.remove('active');
+            document.getElementById('admin-panel').classList.remove('active');
+            document.getElementById('oops-section').classList.remove('active');
+            document.getElementById('menu').classList.add('active');
+            document.getElementById('message').innerText = "";
+            document.getElementById('admin-message').innerText = "";
+        }
+    </script>
+</body>
+</html>
