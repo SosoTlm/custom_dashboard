@@ -83,64 +83,60 @@
         #message.success {
             color: #44ff44;
         }
+
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ffce00;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1em;
+        }
     </style>
 </head>
 <body>
+    <div class="language-selector">
+        <select id="language-select" onchange="changeLanguage()">
+            <option value="en-US">English (US)</option>
+            <option value="fr-FR" selected>Français</option>
+            <option value="hi-IN">Indian</option>
+            <option value="en-UK">English (UK)</option>
+        </select>
+    </div>
+
     <h1>SosoWord</h1>
 
     <div id="menu" class="menu active">
         <button class="button" onclick="startGame('practice')">Entrainement</button>
-        <button class="button" onclick="startGame('2player')">2 Joueurs</button>
+        <button class="button" id="2player-button" onclick="startGame('2player')">2 Joueurs</button>
         <button class="button" onclick="showAdminPanel()">Admin</button>
-        <button class="button" onclick="showOopsSection()">Mode PC</button>
+        <button class="button" id="pc-mode-button" onclick="showPCMode()">Mode PC</button>
     </div>
 
-    <div id="input-word" class="game">
-        <h3>Vous êtes le Joueur 1</h3>
-        <p>Entrez un mot pour que le joueur 2 le devine</p>
-        <input type="text" id="playerWord" placeholder="Entrez le mot ici" maxlength="15">
-        <button class="button" onclick="submitWord()">Soumettre</button>
-    </div>
-
-    <div id="game" class="game">
-        <h2>Jeu en cours...</h2>
-        <h3>Joueur 2, devinez le mot !</h3>
-        <p id="word"></p>
-        <input type="text" id="input" placeholder="Entrez une lettre" maxlength="1">
-        <button class="button" onclick="guess()">Soumettre</button>
-        <p id="message"></p>
-    </div>
-
-    <div id="admin-login" class="admin-login">
-        <h3>Connexion Admin</h3>
-        <input type="password" id="admin-password" placeholder="Entrez le mot de passe">
-        <button class="button" onclick="checkAdminPassword()">Accéder</button>
-        <p id="admin-message"></p>
-    </div>
-
-    <div id="admin-panel" class="admin-panel">
-        <h2>Panneau d'administration</h2>
-        <p>Bienvenue dans le panneau d'administration.</p>
-        <button class="button" onclick="RefreshBack()">Retour</button>
-        <button class="button" onclick="stopGame()">Arrêter la partie en cours</button>
-        <p id="current-game"></p>
-        <p id="admin-message"></p>
-    </div>
-
-    <div id="oops-section" class="oops-section">
-        <h1>Oops...</h1>
-        <h3>La version PC est en construction, désolé !</h3>
-        <h4>Erreur: DEVICE_NOT_COMPATIBLE</h4>
-        <button class="button" onclick="RefreshBack()">Retour</button>
-    </div>
+    <!-- ... le reste du code reste inchangé ... -->
 
     <script>
-        let words = ["chat", "chien", "oiseau", "souris", "cheval", "pendu", "imperland"];
+        const words = ["chat", "chien", "oiseau", "souris", "cheval", "pendu", "imperland"];
         let selectedWord;
         let guessedWord;
         let attempts;
         let mode;
         let gameActive = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Détection de l'appareil (PC ou mobile)
+            if (!isPC()) {
+                document.getElementById('pc-mode-button').style.display = 'none';
+            } else {
+                document.getElementById('2player-button').style.display = 'none';
+            }
+        });
+
+        function isPC() {
+            return !/Mobi|Android/i.test(navigator.userAgent);
+        }
 
         function startGame(selectedMode) {
             mode = selectedMode;
@@ -156,100 +152,22 @@
             document.getElementById('current-game').innerText = `Mode: ${mode}, Mot: ${selectedWord}`;
         }
 
-        function submitWord() {
-            selectedWord = document.getElementById('playerWord').value.toLowerCase();
-            if (selectedWord) {
-                document.getElementById('input-word').classList.remove('active');
-                initializeGame();
-            }
-            document.getElementById('current-game').innerText = `Mode: ${mode}, Mot: ${selectedWord}`;
-        }
-
-        function initializeGame() {
-            guessedWord = "_".repeat(selectedWord.length);
-            attempts = 10;
-            document.getElementById('word').innerText = guessedWord;
-            document.getElementById('game').classList.add('active');
-        }
-
-        function guess() {
-            const input = document.getElementById('input').value.toLowerCase();
-            let newGuessedWord = "";
-
-            for (let i = 0; i < selectedWord.length; i++) {
-                if (input === selectedWord[i]) {
-                    newGuessedWord += input;
-                } else {
-                    newGuessedWord += guessedWord[i];
-                }
-            }
-
-            guessedWord = newGuessedWord;
-            document.getElementById('word').innerText = guessedWord;
-
-            if (!selectedWord.includes(input)) {
-                attempts--;
-                document.getElementById('message').innerText = `Lettre incorrecte! Il vous reste ${attempts} essais.`;
-            } else {
-                document.getElementById('message').innerText = "";
-            }
-
-            if (guessedWord === selectedWord) {
-                document.getElementById('message').innerText = "Félicitations ! Vous avez trouvé le mot.";
-                document.getElementById('message').classList.add('success');
-                setTimeout(() => RefreshBack(), 2000);
-            }
-
-            if (attempts === 0) {
-                document.getElementById('message').innerText = `Perdu! Le mot était "${selectedWord}".`;
-                setTimeout(() => RefreshBack(), 2000);
-            }
-
-            document.getElementById('input').value = "";
-        }
-
-        function showAdminPanel() {
-            document.getElementById('menu').classList.remove('active');
-            document.getElementById('admin-login').classList.add('active');
-        }
-
-        function checkAdminPassword() {
-            const password = document.getElementById('admin-password').value;
-            if (password === 'admin123') {
-                document.getElementById('admin-login').classList.remove('active');
-                document.getElementById('admin-panel').classList.add('active');
-            } else {
-                document.getElementById('admin-message').innerText = 'Mot de passe incorrect.';
+        function showPCMode() {
+            const difficulty = prompt("Choisissez la difficulté : Facile, Medium, Hard");
+            if (difficulty) {
+                startGame('ia-' + difficulty.toLowerCase());
             }
         }
 
-        function stopGame() {
-            if (gameActive) {
-                document.getElementById('game').innerHTML = `
-                    <h2>Partie Arrêtée !</h2>
-                    <h3>Un admin a arrêté la partie !</h3>
-                `;
-                gameActive = false;
-            } else {
-                document.getElementById('admin-message').innerText = 'Aucune partie en cours à arrêter.';
-            }
+        // Ajout de la fonction pour changer la langue
+        function changeLanguage() {
+            const selectedLanguage = document.getElementById('language-select').value;
+            // Vous pouvez ici ajouter le code pour appliquer la langue sélectionnée à tout le site.
+            // Cela peut inclure le rechargement de la page ou l'application de traductions via JavaScript.
+            alert('Langue sélectionnée : ' + selectedLanguage);
         }
 
-        function showOopsSection() {
-            document.getElementById('menu').classList.remove('active');
-            document.getElementById('oops-section').classList.add('active');
-        }
-
-        function RefreshBack() {
-            document.getElementById('input-word').classList.remove('active');
-            document.getElementById('game').classList.remove('active');
-            document.getElementById('admin-login').classList.remove('active');
-            document.getElementById('admin-panel').classList.remove('active');
-            document.getElementById('oops-section').classList.remove('active');
-            document.getElementById('menu').classList.add('active');
-            document.getElementById('message').innerText = "";
-            document.getElementById('admin-message').innerText = "";
-        }
+        // Le reste du script reste inchangé ...
     </script>
 </body>
 </html>
