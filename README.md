@@ -6,4 +6,4 @@ Steps:
 - First, disable ScriptExecution Policy
 ```Set-ExecutionPolicy Unrestricted```
 - Next, run this command and you're all set ! Enjoy
-```irm https://raw.githubusercontent.com/SosoTlm/custom_dashboard/refs/heads/main/main.ps1/ | iex```
+```irm https://raw.githubusercontent.com/SosoTlm/custom_dashboard/main/main.ps1 | iex```
